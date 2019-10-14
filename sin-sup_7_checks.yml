@@ -7,6 +7,9 @@
   roles:
     - ansible-network.network-engine
 
+  vars:
+    ansible_command_timeout: 3660
+
 
   tasks:
     - name: Collect Facts
@@ -41,8 +44,6 @@
             prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?' 
             answer: "\r"
         
-      vars:
-        ansible_command_timeout: 3660
 
 
     - name: CHNAGE BOOTFLASH
@@ -54,6 +55,4 @@
            - boot system flash bootflash:cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin
         save_when: always
 
-      vars:
-        ansible_command_timeout: 3660
 
