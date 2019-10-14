@@ -1,0 +1,25 @@
+---
+- name: get IOS facts
+  hosts: "ios_test"
+  gather_facts: false
+  connection: local
+
+  roles:
+    - ansible-network.network-engine
+
+
+  tasks:
+    - name: Collect Facts
+      ios_facts:
+         gather_subset: hardware
+      register: output
+
+    - name: show output
+      debug:
+        msg:  "{{ ansible_net_hostname }}, {{ ansible_net_version }}, non-compliant" 
+      when: ansible_net_version != '03.08.06.E'
+
+    - name: show output
+      debug:
+        msg:  "{{ ansible_net_hostname }}, {{ ansible_net_version }}, compliant"                    
+      when: ansible_net_version == '03.08.06.E'
