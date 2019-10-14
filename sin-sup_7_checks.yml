@@ -1,0 +1,59 @@
+---
+- name: network role test 
+  hosts: "ios_test"
+  gather_facts: false
+  connection: local
+
+  roles:
+    - ansible-network.network-engine
+
+
+  tasks:
+    - name: Collect Facts
+      ios_facts:
+         gather_subset: hardware
+      register: output
+
+
+    - name: List Bootflash
+      ios_command:
+         commands: "dir"
+      register: output
+ 
+
+    - name: Command parser
+      command_parser: 
+         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         content: "{{ output.stdout[0] }}"
+
+    - name: CHECK DISK SPACE SKIPS IF THERE IS ENOUGH DISK SPACE
+      fail:
+        msg: "Not enough space on filesystem"
+      when: "( ansible_net_filesystems_info['bootflash:'].spacefree_kb  < 200000 )"
+    
+
+    - name: COPY IOS IMAGE
+      when: "( ansible_net_filesystems_info['bootflash:'].spacefree_kb  > 200000 ) and (item not in dir_facts.files)"
+      with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
+      ios_command:
+       commands: 
+          - command: "copy tftp://172.31.162.208/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin bootflash:" 
+            prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?' 
+            answer: "\r"
+        
+      vars:
+        ansible_command_timeout: 3660
+
+
+    - name: CHNAGE BOOTFLASH
+      when: "( ansible_net_filesystems_info['bootflash:'].spacefree_kb  > 200000 ) and (item not in dir_facts.files)"
+      with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
+      ios_config:
+        lines:
+           - no boot system
+           - boot system flash bootflash:cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin
+        save_when: always
+
+      vars:
+        ansible_command_timeout: 3660
+

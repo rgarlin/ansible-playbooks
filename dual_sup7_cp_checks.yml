@@ -1,0 +1,70 @@
+---
+- name: network role test 
+  hosts: "ios_test"
+  gather_facts: false
+  connection: local
+
+  roles:
+    - ansible-network.network-engine
+
+
+  vars:
+    ansible_command_timeout: 3660
+
+
+  tasks:
+
+
+    - name: RUN DIR 
+      ios_command:
+        commands:
+          - dir 
+      register: dir
+
+
+    - name: Command parser
+      command_parser:
+         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         content: "{{ dir.stdout[0] }}"
+
+
+    - name: DISPLAY FREE SPACE
+      debug:
+        msg: "{{ dir_facts.bytes_free }}"
+
+    - name: COPY IOS IMAGE TO BOOTFLASH
+      when: "( dir_facts.bytes_free|int  > 200505900 ) and (item not in dir_facts.files)"
+      with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
+      ios_command:
+       commands:
+          - command: "copy tftp://172.31.162.208/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin bootflash:"
+            prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?'
+            answer: "\r"    
+
+
+    - name: RUN DIR SLAVEBOOTFLASH
+      ios_command:
+        commands:
+          - dir "slavebootflash:"
+      register: dirslave
+
+
+
+    - name: Command parser
+      command_parser:
+         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         content: "{{ dirslave.stdout[0] }}"
+
+
+    - name: DISPLAY SLAVE FREE SPACE
+      debug:
+        msg: "{{ dir_facts.bytes_free }}"
+
+    - name: COPY IOS IMAGE TO SLAVEBOOTFLASH
+      when: "( dir_facts.bytes_free|int  > 200505900 ) and (item not in dir_facts.files)"
+      with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
+      ios_command:
+       commands:
+          - command: "copy tftp://172.31.162.208/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin slavebootflash:"
+            prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?'
+            answer: "\r"

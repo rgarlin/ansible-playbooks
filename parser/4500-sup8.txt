@@ -1,0 +1,4 @@
+compliant_ios_version: 03.08.06.E
+compliant_ios_bytes: 510334984
+compliant_ios_image_name: cat4500es8-universalk9.SPA.03.08.06.E.152-4.E6.bin
+#ansible_command_timeout: 3600
