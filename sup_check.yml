@@ -24,7 +24,7 @@
 
     - name: Command parser
       command_parser:
-         file: "/home/rfg4/playbook-backup/parser/act_sup.yml"
+         file: "/home/rfg4/playbooks/parser/act_sup.yml"
          content: "{{ redundancy.stdout[0] }}"
 
 

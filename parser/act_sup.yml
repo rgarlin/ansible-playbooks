@@ -8,13 +8,11 @@
 - name: Active Sup
   pattern_match:
     regex: 'Active Location = slot (\d)'
-    ##match_all: yes
   register: active
 
 - name: Backup Sup
   pattern_match:
     regex: 'Standby Location = slot (\d)'
-    ##match_all: yes
   register: standby
 
 
