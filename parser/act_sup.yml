@@ -1,0 +1,43 @@
+---
+- name: PARSER META DATA
+  parser_metadata:
+    version: 1.0
+    command: dir 
+
+
+- name: Active Sup
+  pattern_match:
+    regex: 'Active Location = slot (\d)'
+    ##match_all: yes
+  register: active
+
+- name: Backup Sup
+  pattern_match:
+    regex: 'Standby Location = slot (\d)'
+    ##match_all: yes
+  register: standby
+
+
+
+
+- name: build active supervisor facts
+  json_template:
+    template:
+      - key: active
+        value: "{{ active.matches }}"
+  register: sup_active_facts
+  export: true
+  export_as: dict
+
+
+- name: build standby supervisor facts
+  json_template:
+    template:
+      - key: standby
+        value: "{{ standby.matches }}"
+  register: sup_standby_facts
+  export: true
+  export_as: dict
+
+
+

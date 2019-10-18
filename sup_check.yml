@@ -1,0 +1,37 @@
+---
+- name: Verify Active/Standby Sup 
+  hosts: "ios_test"
+  gather_facts: false
+  connection: local
+
+  roles:
+    - ansible-network.network-engine
+
+
+  vars:
+    ansible_command_timeout: 3660
+
+
+  tasks:
+
+
+    - name:  sh redundancy
+      ios_command:
+        commands:
+          - sh redundancy
+      register: redundancy
+
+
+    - name: Command parser
+      command_parser:
+         file: "/home/rfg4/playbook-backup/parser/act_sup.yml"
+         content: "{{ redundancy.stdout[0] }}"
+
+
+    - name: DISPLAY ACTIVE SUP
+      debug:
+        msg: " Active Sup number is {{ sup_active_facts['active'][0] | int }}"
+
+    - name: DISPLAY STANDBY SUP
+      debug:
+        msg: " Standby Sup number is {{ sup_standby_facts['standby'][0] | int }}"
