@@ -1,6 +1,7 @@
 ---
 - name: Verify Active/Standby Sup 
   hosts: "ios_test"
+  serial: 1
   gather_facts: false
   connection: local
 
@@ -31,7 +32,14 @@
     - name: DISPLAY ACTIVE SUP
       debug:
         msg: " Active Sup number is {{ sup_active_facts['active'][0] | int }}"
-
-    - name: DISPLAY STANDBY SUP
-      debug:
+               
+    - name: DISPLAY BACKUP SUP 
+      debug: 
         msg: " Standby Sup number is {{ sup_standby_facts['standby'][0] | int }}"
+
+    - name: DISPLAY ISSU COMMAND
+      debug:
+        msg: "issu changeversion {{ sup_active_facts['active'][0] }} bootflash:cat4500es8-universalk9.SPA.03.08.06.E.152-4.E6.bin {{ sup_standby_facts['standby'][0] }} slavebootflash:cat4500es8-universalk9.SPA.03.08.06.E.152-4.E6.bin"
+
+    - pause:
+        minutes: 1
