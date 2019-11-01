@@ -66,8 +66,8 @@
         charset: utf-8
         from: rgarlin@partners.org
         to: rgarlin@partners.org
-        subject: "Ansible Report for {{ ansible_net_hostname }} has been upgrade to  {{ ansible_net_version }}"
-        body: 'Switch {{ ansible_net_hostname }} has been SUCCESSFULLY upgraded' 
+        subject: "Ansible Report for {{ ansible_net_hostname }}"
+        body: 'Switch {{ ansible_net_hostname }} has been SUCCESSFULLY upgraded {{ ansible_net_version }}' 
       delegate_to: localhost
       when: ansible_net_version == '03.08.06.E'
 
@@ -79,7 +79,7 @@
         charset: utf-8
         from: rgarlin@partners.org
         to: rgarlin@partners.org
-        subject: "Ansible Report for {{ ansible_net_hostname }} has NOT been upgraded current version is  {{ ansible_net_version }}"
-        body: 'Switch {{ ansible_net_hostname }} has NOT been upgraded'
+        subject: "Ansible Report for {{ ansible_net_hostname }}"
+        body: 'Switch {{ ansible_net_hostname }} has NOT been upgraded  current version is {{ ansible_net_version }}'
       delegate_to: localhost
       when: ansible_net_version != '03.08.06.E'
