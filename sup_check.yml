@@ -25,16 +25,16 @@
 
     - name: Command parser
       command_parser:
-         file: "/home/rfg4/playbooks/parser/act_sup.yml"
+         file: "./parser/act_sup.yml"
          content: "{{ redundancy.stdout[0] }}"
 
 
     - name: DISPLAY ACTIVE SUP
       debug:
         msg: " Active Sup number is {{ sup_active_facts['active'][0] | int }}"
-               
-    - name: DISPLAY BACKUP SUP 
-      debug: 
+
+    - name: DISPLAY STANDBY SUP
+      debug:
         msg: " Standby Sup number is {{ sup_standby_facts['standby'][0] | int }}"
 
     - name: DISPLAY ISSU COMMAND
@@ -43,3 +43,43 @@
 
     - pause:
         minutes: 1
+
+    - name: Collect Facts
+      ios_facts:
+         gather_subset: hardware
+      register: output
+
+    - name: show output
+      debug:
+        msg:  "{{ ansible_net_hostname }}, {{ ansible_net_version }}, non-compliant"
+      when: ansible_net_version != '03.08.06.E'
+
+    - name: show output
+      debug:
+        msg:  "{{ ansible_net_hostname }}, {{ ansible_net_version }}, compliant"
+      when: ansible_net_version == '03.08.06.E'    
+
+    - name: send mail compliant
+      mail:
+        host: phsmgout.partners.org
+        port: 25
+        charset: utf-8
+        from: rgarlin@partners.org
+        to: rgarlin@partners.org
+        subject: "Ansible Report for {{ ansible_net_hostname }} has been upgrade to  {{ ansible_net_version }}"
+        body: 'Switch {{ ansible_net_hostname }} has been SUCCESSFULLY upgraded' 
+      delegate_to: localhost
+      when: ansible_net_version == '03.08.06.E'
+
+
+    - name: send mail non-compliant
+      mail:
+        host: phsmgout.partners.org
+        port: 25
+        charset: utf-8
+        from: rgarlin@partners.org
+        to: rgarlin@partners.org
+        subject: "Ansible Report for {{ ansible_net_hostname }} has NOT been upgraded current version is  {{ ansible_net_version }}"
+        body: 'Switch {{ ansible_net_hostname }} has NOT been upgraded'
+      delegate_to: localhost
+      when: ansible_net_version != '03.08.06.E'
