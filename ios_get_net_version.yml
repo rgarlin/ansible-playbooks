@@ -4,9 +4,6 @@
   gather_facts: false
   connection: local
 
-  roles:
-    - ansible-network.network-engine
-
 
   tasks:
     - name: Collect Facts
