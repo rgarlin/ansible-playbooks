@@ -1,0 +1,24 @@
+---
+- name: Template 4500
+  hosts: localhost
+  gather_facts: false
+  connection: local 
+  
+  ## needs to be executed with python2.7 because of python bindings (libselinux-python)
+  ## python2.7 $(which ansible-playbook) template_4500.yml
+  
+
+  tasks:
+    - name: Generate config 
+      template: src=./template/4500.j2 dest=./configs/{{ item.hostname }}.txt
+
+      with_items:
+        - { hostname: test4500-switch-1, voice_vlan_num: 10, voice_vlan_desc: voice_10,
+            data_vlan_num: 11, data_vlan_desc: voice_11, mgmt_vlan_num: 12, mgmt_vlan_desc: voice_12}
+        - { hostname: test4500-switch-2, voice_vlan_num: 20, voice_vlan_desc: voice_20,
+            data_vlan_num: 21, data_vlan_desc: voice_21, mgmt_vlan_num: 22, mgmt_vlan_desc: voice_22}
+        - { hostname: test4500-switch-3, voice_vlan_num: 30, voice_vlan_desc: voice_30,
+            data_vlan_num: 31, data_vlan_desc: voice_31, mgmt_vlan_num: 32, mgmt_vlan_desc: voice_32} 
+        - { hostname: test4500-switch-4, voice_vlan_num: 40, voice_vlan_desc: voice_40,
+            data_vlan_num: 41, data_vlan_desc: voice_41, mgmt_vlan_num: 42, mgmt_vlan_desc: voice_42}
+
