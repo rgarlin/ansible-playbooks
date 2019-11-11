@@ -1,0 +1,826 @@
+no service pad
+service timestamps debug datetime msec localtime
+service timestamps log datetime msec localtime
+service password-encryption
+service compress-config
+!
+hostname {{item.hostname}}
+!
+boot-start-marker
+boot system flash bootflash:cat4500es8-universalk9.SPA.03.06.07.E.152-2.E7.bin
+boot system flash slot0:cat4500es8-universalk9.SPA.03.06.07.E.152-2.E7.bin
+boot-end-marker
+!
+!
+vrf definition mgmtVrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+logging buffered 128000
+no logging rate-limit
+no logging console
+enable secret 5 $1$U7VP$vk3J32CWTElyIndoLoAE00
+!
+aaa new-model
+!
+!
+aaa authentication login default group tacacs+ line
+aaa authentication enable default group tacacs+ enable
+aaa authorization config-commands
+aaa authorization commands 1 default group tacacs+ if-authenticated 
+aaa authorization commands 15 default group tacacs+ if-authenticated 
+aaa authorization network default group tacacs+ 
+aaa accounting exec default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting network default start-stop group tacacs+
+aaa accounting system default start-stop group tacacs+
+!
+!
+!
+!
+!
+!
+aaa session-id common
+clock timezone est -5 0
+clock summer-time edt recurring
+!
+!
+!
+!
+!
+!
+ip domain-list dfci.harvard.edu
+ip domain-list mgh.harvard.edu
+ip domain-list neteng.partners.org
+ip domain-list nsmc.partners.org
+ip domain-list partners.org
+ip domain-name neteng.partners.org
+ip name-server 170.223.111.244
+ip name-server 132.183.100.12
+!
+!
+ip dhcp snooping vlan 2-1001
+no ip dhcp snooping information option
+no ip dhcp snooping verify mac-address
+ip dhcp snooping
+vtp domain partners.org
+vtp mode transparent
+!         
+!         
+!         
+errdisable recovery cause udld
+errdisable recovery interval 600
+power redundancy-mode redundant
+!         
+spanning-tree mode rapid-pvst
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+!         
+redundancy
+ mode sso 
+ main-cpu 
+  auto-sync standard
+!         
+vlan internal allocation policy ascending
+!         
+vlan {{item.voice_vlan_num}}   
+ name {{item.voice_vlan_desc}}
+!         
+vlan {{item.data_vlan_num}}
+ name {{item.data_vlan_desc}}
+!
+v!lan {{item.mgmt_vlan_num}}
+ name {{item.mgmt_vlan_desc}}
+
+
+class-map match-any system-cpp-police-topology-control
+  description Topology control
+class-map match-any system-cpp-police-sw-forward
+  description Sw forwarding, L2 LVX data, LOGGING
+class-map match-all qos-access-port-call-signaling
+ match access-group name qos-access-port-call-signaling
+class-map match-any system-cpp-default
+  description DHCP Snooping, EWLC control, EWCL data 
+class-map match-any system-cpp-police-sys-data
+  description Learning cache ovfl, Crypto Control, Exception, EGR Exception, NFL SAMPLED DATA, RPF Failed
+class-map match-all vlan53
+ match vlan  53
+class-map match-any system-cpp-police-punt-webauth
+  description Punt Webauth
+class-map match-any system-cpp-police-l2lvx-control
+  description L2 LVX control packets
+class-map match-all vlan765
+ match vlan  765
+class-map match-any system-cpp-police-forus
+  description Forus Address resolution and Forus traffic
+class-map match-any system-cpp-police-multicast-end-station
+  description MCAST END STATION
+class-map match-any 7985video-traffic
+ match ip dscp af41 
+class-map match-all qos-access-port-voice-traffic-softphone
+ match access-group name qos-access-port-voice-traffic-softphone
+class-map match-any voice-traffic
+ match ip dscp ef 
+class-map match-any system-cpp-police-multicast
+  description Transit Traffic and MCAST Data
+class-map match-any system-cpp-police-l2-control
+  description L2 control
+class-map match-any system-cpp-police-dot1x-auth
+  description DOT1X Auth
+class-map match-any system-cpp-police-data
+  description ICMP redirect, ICMP_GEN and BROADCAST
+class-map match-any critical-traffic
+ match ip dscp cs6  cs7 
+class-map match-any system-cpp-police-stackwise-virt-control
+  description Stackwise Virtual
+class-map match-any call-signaling
+ match ip dscp cs3 
+class-map match-any non-client-nrt-class
+class-map match-any system-cpp-police-routing-control
+  description Routing control
+class-map match-any system-cpp-police-protocol-snooping
+  description Protocol snooping
+class-map match-all qos-access-port-voice-traffic
+ match access-group name qos-access-port-voice-traffic
+class-map match-all qos-access-port-7985video-traffic
+ match access-group name qos-access-port-7985video-traffic
+ match vlan {{item.data_vlan_num}} 
+ match vlan {{item.voice_vlan_num}}
+class-map match-any system-cpp-police-system-critical
+  description System Critical and Gold
+
+nterface GigabitEthernet1/1
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/2
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/3
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/4
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/5
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/6
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/7
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/8
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/9
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/10
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/11
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/12
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/13
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/14
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/15
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/16
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/17
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/18
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/19
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/20
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/21
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/22
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/23
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/24
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/25
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/26
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/27
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/28
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/29
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/30
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/31
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/32
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/33
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/34
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/35
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/36
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/37
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/38
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/39
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/40
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/41
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/42
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/43
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/44
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/45
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/46
+ description en 111716 bm980
+ switchport access vlan {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/47
+ description car12s1ap3-E36.09
+ switchport access vlan  {{item.data_vlan_num}}
+ switchport mode access
+ logging event link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
+!
+interface GigabitEthernet1/48
+ description car12s1ups
+ switchport access vlan  {{item.data_vlan_num}}
+ switchport mode access
+ switchport voice vlan {{item.voice_vlan_num}}
+ no snmp trap link-status
+ spanning-tree portfast
+ service-policy output outbound-queuing
+ vlan-range {{item.voice_vlan_num}}
+   service-policy input qos-voice-vlan
+ vlan-range {{item.data_vlan_num}}
+   service-policy input qos-data-vlan
+ ip dhcp snooping limit rate 150
