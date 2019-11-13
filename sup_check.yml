@@ -61,11 +61,11 @@
 
     - name: send mail compliant
       mail:
-        host: mail-server 
+        host: mail.domain.com 
         port: 25
         charset: utf-8
-        from: user
-        to: user
+        from: user@domain.com
+        to: user@domain.com
         subject: "Ansible Report for {{ ansible_net_hostname }}"
         body: 'Switch {{ ansible_net_hostname }} has been SUCCESSFULLY upgraded {{ ansible_net_version }}' 
       delegate_to: localhost
@@ -74,11 +74,11 @@
 
     - name: send mail non-compliant
       mail:
-        host: main-server
+        host: mail.domain.com
         port: 25
         charset: utf-8
-        from: users
-        to: user
+        from: user@domain.com
+        to: user@domain.com
         subject: "Ansible Report for {{ ansible_net_hostname }}"
         body: 'Switch {{ ansible_net_hostname }} has NOT been upgraded  current version is {{ ansible_net_version }}'
       delegate_to: localhost
