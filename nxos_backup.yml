@@ -1,0 +1,24 @@
+---
+- name: NXOS save config and backup
+  hosts: "nxos_hosts"
+  gather_facts: false
+  connection: local
+
+
+  tasks:
+    - name: save config
+      nxos_command:
+        commands:
+           -  copy running-config startup-config 
+
+    - name: sh run
+      nxos_command:
+        commands:
+           - show run
+      register: config
+    
+
+    - name: save output
+      copy:
+        content: "{{config.stdout[0]}}"
+        dest: "/configs/backups/{{inventory_hostname }}.txt" 
