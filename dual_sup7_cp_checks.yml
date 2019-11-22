@@ -24,7 +24,7 @@
 
     - name: Command parser
       command_parser:
-         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         file: "/home/user/playbooks/parser/ios_match.yml"
          content: "{{ dir.stdout[0] }}"
 
 
@@ -52,7 +52,7 @@
 
     - name: Command parser
       command_parser:
-         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         file: "/home/user/playbooks/parser/ios_match.yml"
          content: "{{ dirslave.stdout[0] }}"
 
 

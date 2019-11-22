@@ -26,7 +26,7 @@
 
     - name: Command parser
       command_parser: 
-         file: "/home/rfg4/playbooks/parser/ios_match.yml"
+         file: "/home/user/playbooks/parser/ios_match.yml"
          content: "{{ output.stdout[0] }}"
 
     - name: CHECK DISK SPACE SKIPS IF THERE IS ENOUGH DISK SPACE
