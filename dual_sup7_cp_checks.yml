@@ -37,7 +37,7 @@
       with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
       ios_command:
        commands:
-          - command: "copy tftp://172.31.162.208/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin bootflash:"
+          - command: "copy tftp://1.1.1.2/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin bootflash:"
             prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?'
             answer: "\r"    
 
@@ -65,6 +65,6 @@
       with_items: "cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin"
       ios_command:
        commands:
-          - command: "copy tftp://172.31.162.208/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin slavebootflash:"
+          - command: "copy tftp://1.1.1.2/code/cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin slavebootflash:"
             prompt: 'Destination filename [cat4500e-universalk9.SPA.03.08.06.E.152-4.E6.bin]?'
             answer: "\r"
