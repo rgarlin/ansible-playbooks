@@ -12,8 +12,7 @@ from aci_login import get_token
 def get_tenants():
    token = get_token()
 
-   url = "https://oiccapic2.icc.partners.org/api/node/class/fvSubnet.json"
-   ## url = "https://oiccapic2.icc.partners.org/api/node/class/fvBD.json"   
+   url = "https://<apic>/api/node/class/fvSubnet.json"
    headers = {
       "Cookie" : f"APIC-Cookie={token}", 
    }
