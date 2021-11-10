@@ -1,0 +1,43 @@
+---
+# playbook to get logging on a nxos device
+- name: logging 
+  hosts: all
+  connection: local
+  gather_facts: no
+  vars:
+    datetime: "{{ lookup('pipe', 'date +%Y-%m-%d') }} {{ lookup('pipe', 'date +%H:%M') }}"
+  
+  
+  tasks:
+         
+
+
+    - name: Show running-config
+      nxos_command:
+        commands: sh running-config 
+      register: ntp_server
+
+    - name: get current ntp servers
+      set_fact: ntpservers="{{ ntp_server.stdout[0] | regex_findall('^ntp server (\S+)', multiline=True) }}"
+
+    - debug:
+        msg: "{{ item }}"
+      with_items: "{{ ntpservers }}"   
+
+    
+    - name: remove servers
+      nxos_config:
+        lines: 
+          - "no ntp server {{ item }}"
+      with_items: "{{ ntpservers }}"      
+      when: 
+        - item != 'ntp_pri_server'
+        - item != 'ntp_sec_server' 
+
+    - name: add server
+      nxos_config:
+        lines:
+          - ntp server {{ ntp_pri_server }} prefer use-vrf management 
+          - ntp server {{ ntp_sec_server }} use-vrf management     
+          - clock timezone UTC 0 0
+          - ntp source-interface  mgmt0 
