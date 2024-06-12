@@ -1,6 +1,6 @@
 ---
 # playbook to get logging on a nxos device
-- name: logging 
+- name: LOGGING 
   hosts: all
   connection: local
   gather_facts: no
